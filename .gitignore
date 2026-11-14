@@ -1,0 +1,7 @@
+/target
+/.env
+/agent-keys*.json
+/.idea
+/.vscode
+*.log
+rules.md
