@@ -125,7 +125,7 @@ CREATE TABLE follower_vault_state (
 
 CREATE TABLE attestations (
     strategy_id TEXT NOT NULL REFERENCES strategies(strategy_id),
-    window TEXT NOT NULL,
+    "window" TEXT NOT NULL,
     period_start TIMESTAMPTZ NOT NULL,
     period_end TIMESTAMPTZ NOT NULL,
     twr_bps BIGINT NOT NULL,
@@ -137,9 +137,9 @@ CREATE TABLE attestations (
     signature TEXT NOT NULL,
     tx_hash TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    PRIMARY KEY (strategy_id, window, period_end)
+    PRIMARY KEY (strategy_id, "window", period_end)
 );
-CREATE INDEX attestations_latest_idx ON attestations (strategy_id, window, period_end DESC);
+CREATE INDEX attestations_latest_idx ON attestations (strategy_id, "window", period_end DESC);
 
 CREATE TABLE chain_cursor (
     contract_id TEXT PRIMARY KEY,

@@ -482,7 +482,7 @@ impl Store {
         limit: i64,
     ) -> Result<Vec<AttestationView>, AppError> {
         sqlx::query(
-            "SELECT strategy_id, window, period_start, period_end, twr_bps, drawdown_bps, \
+            "SELECT strategy_id, \"window\", period_start, period_end, twr_bps, drawdown_bps, \
                     nav_bucket, trade_count_bucket, encode(snapshot_root, 'hex') AS snapshot_root, \
                     tee_quote, signature, tx_hash, created_at \
              FROM attestations WHERE strategy_id = $1 ORDER BY period_end DESC LIMIT $2",
@@ -570,10 +570,10 @@ impl Store {
     ) -> Result<(), AppError> {
         sqlx::query(
             "INSERT INTO attestations \
-             (strategy_id, window, period_start, period_end, twr_bps, drawdown_bps, \
+             (strategy_id, \"window\", period_start, period_end, twr_bps, drawdown_bps, \
               nav_bucket, trade_count_bucket, snapshot_root, tee_quote, signature, tx_hash) \
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) \
-             ON CONFLICT (strategy_id, window, period_end) DO NOTHING",
+             ON CONFLICT (strategy_id, \"window\", period_end) DO NOTHING",
         )
         .bind(attestation.strategy_id.as_str())
         .bind(attestation.window)
@@ -752,7 +752,7 @@ impl Store {
                     count(k.key_id) FILTER (WHERE k.status = 'active' AND k.expires_at > now()) AS follower_count \
              FROM strategies s \
              JOIN LATERAL (SELECT * FROM attestations a WHERE a.strategy_id = s.strategy_id \
-                           AND a.window = $1 ORDER BY a.period_end DESC LIMIT 1) a ON true \
+                           AND a.\"window\" = $1 ORDER BY a.period_end DESC LIMIT 1) a ON true \
              LEFT JOIN access_keys k ON k.strategy_id = s.strategy_id \
              WHERE s.status = 'active' AND ($2::text IS NULL OR $2 = ANY(s.assets)) \
              GROUP BY s.strategy_id, a.twr_bps, a.drawdown_bps, a.nav_bucket, \
@@ -976,7 +976,7 @@ impl Store {
     ) -> Result<(), AppError> {
         sqlx::query(
             "UPDATE attestations SET tx_hash = $4 \
-             WHERE strategy_id = $1 AND window = $2 AND period_end = $3",
+             WHERE strategy_id = $1 AND \"window\" = $2 AND period_end = $3",
         )
         .bind(strategy_id.as_str())
         .bind(window)
@@ -994,9 +994,9 @@ impl Store {
         tx_hash: &str,
     ) -> Result<(), AppError> {
         sqlx::query(
-            "UPDATE attestations SET tx_hash = $3 WHERE (strategy_id, window, period_end) = \
-             (SELECT strategy_id, window, period_end FROM attestations \
-              WHERE strategy_id = $1 AND window = $2 ORDER BY period_end DESC LIMIT 1)",
+            "UPDATE attestations SET tx_hash = $3 WHERE (strategy_id, \"window\", period_end) = \
+             (SELECT strategy_id, \"window\", period_end FROM attestations \
+              WHERE strategy_id = $1 AND \"window\" = $2 ORDER BY period_end DESC LIMIT 1)",
         )
         .bind(strategy_id.as_str())
         .bind(window)
